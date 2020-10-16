@@ -3,17 +3,37 @@ const app = express();
 const db = require("./db");
 const cookieParser = require("cookie-parser");
 const handlebars = require("express-handlebars");
+const cookieSession = require("cookie-session");
+const csurf = require("csurf");
 
 app.engine("handlebars", handlebars());
 app.set("view engine", "handlebars");
 
-app.use(express.urlencoded({ extended: false }));
-
-app.use(express.static("./public"));
+app.use(
+    cookieSession({
+        secret: `I'm always angry.`,
+        maxAge: 1000 * 60 * 60 * 24 * 14, // two weeks in milliseconds, they reset back to zero after this time has passed
+    })
+);
 
 app.use(cookieParser());
 
+app.use(express.urlencoded({ extended: false }));
+
+// app.use(csurf());
+
+// app.use(function (req, res, next) {
+//     // this type of middleware runs for every route
+//     res.setHeader("x-frame-options", "DENY"); // or "SAMEORGIN"
+//     next();
+// });
+
+app.use(express.static("./public"));
+
 app.get("/", (req, res) => {
+    // console.log("req.session: ", req.session);
+    // req.session.pimento = "bigSecret99"; // pimento is a value we can set whatever we want (eg. id from database?)
+
     res.redirect("/petition");
     console.log("get request to / route happened");
 });
@@ -24,24 +44,7 @@ app.get("/petition", (req, res) => {
     });
 });
 
-app.post("/petition", (req, res) => {
-    const { firstname, lastname } = req.body;
-
-    console.log("POST request made to the / petition route");
-    if (firstname && lastname) {
-        res.cookie("authenticated", true);
-        res.redirect("/petition/thanks");
-    } else if (!firstname || !lastname) {
-        // res.send(`
-        //     <h1>Oh, something went wrong. Please try again!</h1>
-        // `); // render back petition page here with the above text, maybe with helpers or partials
-        console.log("redirected");
-        res.redirect("/petition");
-    }
-});
-
 app.get("/petition/thanks", (req, res) => {
-    console.log("req.cookies: ", req.cookies);
     if (req.cookies.authenticated) {
         res.render("thanks", {
             layouts: "main",
@@ -51,39 +54,74 @@ app.get("/petition/thanks", (req, res) => {
     }
 });
 
-app.get("/signatures", (req, res) => {
-    db.getSignatures()
-        .then((results) => {
-            // or directly {{rows}}
-            console.log("results from getSignatures:", results.rows); // or directly rows
-        })
-        .catch((err) => {
-            console.log("err in getSignatures:", err);
-        });
-});
-
-app.post("/add-signature", (req, res) => {
-    db.addSignature("Ola Lola ", "Lolo Elo")
-        .then(() => {
-            // this is harcoded but should come from the user input
-        })
-        .catch((err) => {
-            console.log("err in addSignature:", err);
-        });
-});
-
 app.get("/petition/signers", (req, res) => {
-    // const { signatures } = req.params;
-    // const signers = db.find((item) => item.rows === signatures);
     if (req.cookies.authenticated) {
-        res.render("signers", {
-            layout: "main",
-            // signers,
-        });
+        db.getSignatures()
+            .then(({ rows }) => {
+                // results or directly {{rows}}
+                console.log("results from getSignatures:", rows); // results.rows or directly rows
+                // let signersList = "";
+                res.render("signers", {
+                    rows,
+                    // signersList,
+                });
+            })
+            .catch((err) => {
+                console.log("err in getSignatures:", err);
+            });
     } else {
         res.redirect("/petition");
     }
 });
+
+app.post("/petition", (req, res) => {
+    const { firstname, lastname, signature } = req.body;
+
+    console.log("POST request made to the / petition route");
+    if (firstname && lastname && signature) {
+        db.addSignature(firstname, lastname, signature)
+            .then(() => {
+                res.redirect("/petition/thanks");
+            })
+            .catch((err) => {
+                console.log("err in addSignature:", err);
+            });
+        res.cookie("authenticated", true);
+    } else if (!firstname || !lastname || !signature) {
+        // res.send(`
+        //     <h1>Oh, something went wrong. Please try again!</h1>
+        // `); // render back petition page here with the above text, maybe with helpers or partials
+        console.log("redirected");
+        res.redirect("/petition");
+    }
+});
+
+// app.post("/petition", (req, res) => {
+//     const { firstname, lastname } = req.body;
+//     console.log("added new signer");
+
+//     db.addSignature(firstname, lastname)
+//         .then(() => {
+//             res.redirect("/petition/thanks");
+//         })
+//         .catch((err) => {
+//             console.log("err in addSignature:", err);
+//         });
+// });
+
+// app.get("/petition/signers", (req, res) => {
+//     // const { signatures } = req.params;
+//     // const signers = db.find((item) => item.rows === signatures);
+//     if (req.cookies.authenticated) {
+//         res.render("signers", {
+//             layout: "main",
+
+//             // signers,
+//         });
+//     } else {
+//         res.redirect("/petition");
+//     }
+// });
 
 app.listen(8080, () => console.log("petition server is listening..."));
 
