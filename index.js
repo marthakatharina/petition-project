@@ -49,24 +49,48 @@ app.get("/petition", (req, res) => {
     });
 });
 
+// app.get("/petition/thanks", (req, res) => {
+//     if (req.session.signatureId) {
+//         // (req.cookies.authenticated)
+//         db.getSigner(req.session.signatureId).then(({ rows }) => {
+//             console.log("results from getSigner:", rows);
+
+//             db.countSignatures()
+//                 .then(({ rows }) => {
+//                     console.log("results from countSignatures:", rows); //
+//                     res.render("thanks", {
+//                         layouts: "main",
+//                         rows,
+//                     });
+//                 })
+//                 .catch((err) => {
+//                     console.log("err in countSignatures:", err);
+//                 });
+//         });
+//     } else {
+//         res.redirect("/petition");
+//     }
+// });
+
 app.get("/petition/thanks", (req, res) => {
     if (req.session.signatureId) {
         // (req.cookies.authenticated)
-        db.countSignatures()
-            .then(({ rows }) => {
-                console.log("results from countSignatures:", rows); //
-                res.render("thanks", {
-                    layouts: "main",
-                    rows,
+        db.countSignatures().then(({ rows }) => {
+            console.log("results from countSignatures:", rows);
+            const numOfSigners = rows[0].count;
+            db.getSigner(req.session.signatureId)
+                .then(({ rows }) => {
+                    console.log("results from getSigner:", rows); //
+                    res.render("thanks", {
+                        layouts: "main",
+                        rows,
+                        numOfSigners,
+                    });
+                })
+                .catch((err) => {
+                    console.log("err in countSignatures:", err);
                 });
-            })
-            .catch((err) => {
-                console.log("err in countSignatures:", err);
-            });
-
-        //     res.render("thanks", {
-        //         layouts: "main",
-        //     });
+        });
     } else {
         res.redirect("/petition");
     }

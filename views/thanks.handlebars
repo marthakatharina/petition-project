@@ -1,4 +1,10 @@
 <h1>Thank you for signing!</h1>
 
-<a href="/petition/signers"><h2>See all {{rows.[0].count}} signers</h2></a>
+{{#rows}}
+
+<h2>Your signature:<img src="{{signature}}" alt="signature"/></h2>
+
+{{/rows}}
+
+<a href="/petition/signers"><h2>See all {{numOfSigners}} signers</h2></a>
 
