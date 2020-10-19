@@ -5,6 +5,7 @@ const handlebars = require("express-handlebars");
 // const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
+const { hash, compare } = require("./bc");
 
 app.engine("handlebars", handlebars());
 app.set("view engine", "handlebars");
@@ -31,46 +32,124 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static("./public"));
 
 app.get("/", (req, res) => {
+    if (!req.session.signatureId) {
+        // (!req.cookies.authenticated)
+        res.redirect("/register");
+    } else {
+        res.redirect("/login");
+        console.log("already registered / redirected to login");
+    }
+});
+
+app.get("/register", (req, res) => {
+    res.render("register", {
+        layouts: "main",
+    });
+});
+
+app.post("/register", (req, res) => {
+    const { firstname, lastname, email, password } = req.body;
+
+    console.log("POST request made to the / register route");
+
+    if (firstname && lastname && email && password) {
+        db.addUser(firstname, lastname, email, password)
+            .then(({ rows }) => {
+                req.session.signatureId = rows[0].id;
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in addUser:", err);
+            });
+        // res.cookie("authenticated", true);
+    } else if (!firstname || !lastname || !email || !password) {
+        console.log("redirected");
+        res.render("register", {
+            errorMessage: "Something went wrong. Please try again!",
+        });
+    }
+});
+
+app.get("/login", (req, res) => {
     // console.log("req.session: ", req.session);
     // req.session.pimento = "bigSecret99"; // pimento is a value we can set whatever we want (eg. id from database?)
 
     if (!req.session.signatureId) {
         // (!req.cookies.authenticated)
-        res.redirect("/petition");
+        res.redirect("/register");
     } else {
-        res.redirect("/petition/thanks");
-        console.log("already signed / redirected");
+        res.render("login", {
+            layouts: "main",
+        });
+        console.log("already registered / redirected to login");
     }
 });
 
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    console.log("POST request made to the / login route");
+
+    if (email && password) {
+        // db.addUser(email, password)
+        //     .then(({ rows }) => {
+        //         req.session.userId = rows[0].id;
+        res.redirect("/petition");
+        // })
+        // .catch((err) => {
+        //     console.log("err in addUser:", err);
+        // });
+        // res.cookie("authenticated", true);
+    } else if (!email || !password) {
+        console.log("redirected");
+        res.render("login", {
+            errorMessage: "Something went wrong. Please try again!",
+        });
+    }
+});
+
+// app.get("/", (req, res) => {
+//     // console.log("req.session: ", req.session);
+//     // req.session.pimento = "bigSecret99"; // pimento is a value we can set whatever we want (eg. id from database?)
+
+//     if (!req.session.signatureId) {
+//         // (!req.cookies.authenticated)
+//         res.redirect("/petition");
+//     } else {
+//         res.redirect("/petition/thanks");
+//         console.log("already signed / redirected");
+//     }
+// });
+
 app.get("/petition", (req, res) => {
+    console.log("req.session: ", req.session);
     res.render("petition", {
         layouts: "main",
     });
 });
 
-// app.get("/petition/thanks", (req, res) => {
-//     if (req.session.signatureId) {
-//         // (req.cookies.authenticated)
-//         db.getSigner(req.session.signatureId).then(({ rows }) => {
-//             console.log("results from getSigner:", rows);
+app.post("/petition", (req, res) => {
+    const { signature } = req.body;
 
-//             db.countSignatures()
-//                 .then(({ rows }) => {
-//                     console.log("results from countSignatures:", rows); //
-//                     res.render("thanks", {
-//                         layouts: "main",
-//                         rows,
-//                     });
-//                 })
-//                 .catch((err) => {
-//                     console.log("err in countSignatures:", err);
-//                 });
-//         });
-//     } else {
-//         res.redirect("/petition");
-//     }
-// });
+    console.log("POST request made to the / petition route");
+
+    if (signature) {
+        db.addSignature(signature)
+            .then(({ rows }) => {
+                req.session.signatureId = rows[0].id;
+                res.redirect("/petition/thanks");
+            })
+            .catch((err) => {
+                console.log("err in addSignature:", err);
+            });
+        // res.cookie("authenticated", true);
+    } else {
+        console.log("redirected");
+        res.render("petition", {
+            errorMessage: "Something went wrong. Please try again!",
+        });
+    }
+});
 
 app.get("/petition/thanks", (req, res) => {
     if (req.session.signatureId) {
@@ -112,29 +191,6 @@ app.get("/petition/signers", (req, res) => {
             });
     } else {
         res.redirect("/petition");
-    }
-});
-
-app.post("/petition", (req, res) => {
-    const { firstname, lastname, signature } = req.body;
-
-    console.log("POST request made to the / petition route");
-
-    if (firstname && lastname && signature) {
-        db.addSignature(firstname, lastname, signature)
-            .then(({ rows }) => {
-                req.session.signatureId = rows[0].id;
-                res.redirect("/petition/thanks");
-            })
-            .catch((err) => {
-                console.log("err in addSignature:", err);
-            });
-        // res.cookie("authenticated", true);
-    } else if (!firstname || !lastname || !signature) {
-        console.log("redirected");
-        res.render("petition", {
-            errorMessage: "Something went wrong. Please try again!",
-        });
     }
 });
 

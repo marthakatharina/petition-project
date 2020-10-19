@@ -1,24 +1,26 @@
 const canvasJQ = $("canvas");
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const context = canvas.getContext("2d");
+
+// var context = document.getElementById("canvas").getContext("2d");
 
 const signature = $('input[name="signature"]');
 
-// Canvas painting
+// Canvas drawing:
 canvasJQ.on("mousedown", (e) => {
     let x = e.clientX - canvasJQ.eq(0).offset().left;
     let y = e.clientY - canvasJQ.eq(0).offset().top;
-    ctx.moveTo(x, y);
-    ctx.beginPath();
+    context.moveTo(x, y);
+    context.beginPath();
     canvasJQ.on("mousemove", (e) => {
         let x = e.clientX - canvasJQ.eq(0).offset().left;
         let y = e.clientY - canvasJQ.eq(0).offset().top;
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        context.lineTo(x, y);
+        context.stroke();
     });
     canvasJQ.on("mouseup", () => {
         canvasJQ.unbind("mousemove");
-        // Obtaining image url
+        // Obtaining image url:
         signature.val(canvas.toDataURL());
     });
 });
