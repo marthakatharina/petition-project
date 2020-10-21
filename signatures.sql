@@ -7,5 +7,5 @@ CREATE TABLE signatures (
      signature VARCHAR NOT NULL CHECK (signature != ''),
      user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)
+);
 

@@ -1,8 +1,13 @@
 var spicedPg = require("spiced-pg");
-var db = spicedPg("postgres:postgres:postgres@localhost:5432/petition");
+var db = spicedPg(
+    process.env.DATABASE_URL ||
+        "postgres:postgres:postgres@localhost:5432/petition"
+);
 
 module.exports.getSignatures = () => {
-    return db.query(`SELECT * FROM signatures`);
+    return db.query(
+        `SELECT signatures.id AS id, users.first AS first, users.last AS last, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url FROM signatures JOIN users ON signatures.user_id = users.id LEFT OUTER JOIN user_profiles ON signatures.user_id = user_profiles.user_id`
+    );
 };
 
 module.exports.addSignature = (signature, user_id) => {
@@ -32,8 +37,17 @@ module.exports.userInfo = (email) => {
     return db.query(`SELECT * FROM users WHERE email = '${email}'`);
 };
 
-module.exports.getSigner = (cookie) => {
-    return db.query(`SELECT * FROM signatures WHERE id = ${cookie} `);
+module.exports.additionalInfo = (age, city, url, user_id) => {
+    return db.query(
+        `
+        INSERT INTO user_profiles (age, city, url, user_id)
+        VALUES($1, $2, $3, $4) RETURNING id`,
+        [age, city, url, user_id]
+    ); //this is against sql injection attack, it tells which arrgument to escape (first id starts at $1 )
+};
+
+module.exports.getSigner = (id) => {
+    return db.query(`SELECT * FROM signatures WHERE id = ${id} `);
 };
 
 module.exports.countSignatures = () => {
