@@ -14,8 +14,9 @@ module.exports.addSignature = (signature, user_id) => {
     ); //this is against sql injection attack, it tells which arrgument to escape (first id starts at $1 )
 };
 
-module.exports.getUsers = () => {
-    return db.query(`SELECT * FROM users`);
+module.exports.checkIfSigned = (id) => {
+    return db.query(`SELECT * FROM signatures WHERE user_id IN
+    (SELECT id FROM users WHERE id = ${id})`);
 };
 
 module.exports.addUser = (first, last, email, password) => {
@@ -31,8 +32,8 @@ module.exports.userInfo = (email) => {
     return db.query(`SELECT * FROM users WHERE email = '${email}'`);
 };
 
-module.exports.getSigner = () => {
-    return db.query(`SELECT * FROM signatures`);
+module.exports.getSigner = (cookie) => {
+    return db.query(`SELECT * FROM signatures WHERE id = ${cookie} `);
 };
 
 module.exports.countSignatures = () => {

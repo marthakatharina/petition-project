@@ -163,22 +163,51 @@ app.post("/login", (req, res) => {
 //     }
 // });
 
+// app.get("/petition", (req, res) => {
+//     console.log("req.session: ", req.session);
+//     res.render("petition", {
+//         layouts: "main",
+//     });
+// });
+
 app.get("/petition", (req, res) => {
     console.log("req.session: ", req.session);
-    res.render("petition", {
-        layouts: "main",
-    });
+    const { id } = req.session.userId;
+    const { cookie } = req.session;
+
+    if (req.session.userId.signatureId) {
+        res.redirect("/petition/thanks");
+    } else {
+        db.checkIfSigned(id)
+            .then(({ rows }) => {
+                console.log("results from checkIfSigned:", rows);
+                if (rows.length === 0) {
+                    res.render("petition", {
+                        layouts: "main",
+                        cookie,
+                    });
+                } else {
+                    req.session.userId.signatureId = rows[0].id;
+                    res.redirect("/petition/thanks");
+                }
+            })
+            .catch((err) => {
+                console.log("err in checkIfSigned:", err);
+            });
+    }
 });
 
 app.post("/petition", (req, res) => {
     const { signature } = req.body;
+    const { id } = req.session.userId;
+    const { cookie } = req.session;
 
     console.log("POST request made to the / petition route");
 
     if (signature) {
-        db.addSignature(signature)
+        db.addSignature(signature, id)
             .then(({ rows }) => {
-                req.session.signatureId = rows[0].id;
+                req.session.userId.signatureId = rows[0].id;
                 console.log("rows: ", rows);
                 res.redirect("/petition/thanks");
             })
@@ -190,17 +219,18 @@ app.post("/petition", (req, res) => {
         console.log("redirected");
         res.render("petition", {
             errorMessage: "Something went wrong. Please try again!",
+            cookie,
         });
     }
 });
 
 app.get("/petition/thanks", (req, res) => {
-    if (req.session.signatureId) {
+    if (req.session.userId.signatureId) {
         // (req.cookies.authenticated)
         db.countSignatures().then(({ rows }) => {
             console.log("results from countSignatures:", rows);
             const numOfSigners = rows[0].count;
-            db.getSigner(req.session.signatureId)
+            db.getSigner(req.session.userId.signatureId)
                 .then(({ rows }) => {
                     console.log("results from getSigner:", rows); //
                     res.render("thanks", {
@@ -219,7 +249,7 @@ app.get("/petition/thanks", (req, res) => {
 });
 
 app.get("/petition/signers", (req, res) => {
-    if (req.session.signatureId) {
+    if (req.session.userId.signatureId) {
         // (req.cookies.authenticated)
         db.getSignatures()
             .then(({ rows }) => {
@@ -237,16 +267,71 @@ app.get("/petition/signers", (req, res) => {
     }
 });
 
+// app.post("/petition", (req, res) => {
+//     const { signature } = req.body;
+
+//     console.log("POST request made to the / petition route");
+
+//     if (signature) {
+//         db.addSignature(signature)
+//             .then(({ rows }) => {
+//                 req.session.signatureId = rows[0].id;
+//                 console.log("rows: ", rows);
+//                 res.redirect("/petition/thanks");
+//             })
+//             .catch((err) => {
+//                 console.log("err in addSignature:", err);
+//             });
+//         // res.cookie("authenticated", true);
+//     } else {
+//         console.log("redirected");
+//         res.render("petition", {
+//             errorMessage: "Something went wrong. Please try again!",
+//         });
+//     }
+// });
+
+// app.get("/petition/thanks", (req, res) => {
+//     if (req.session.signatureId) {
+//         // (req.cookies.authenticated)
+//         db.countSignatures().then(({ rows }) => {
+//             console.log("results from countSignatures:", rows);
+//             const numOfSigners = rows[0].count;
+//             db.getSigner(req.session.signatureId)
+//                 .then(({ rows }) => {
+//                     console.log("results from getSigner:", rows); //
+//                     res.render("thanks", {
+//                         layouts: "main",
+//                         rows,
+//                         numOfSigners,
+//                     });
+//                 })
+//                 .catch((err) => {
+//                     console.log("err in countSignatures:", err);
+//                 });
+//         });
+//     } else {
+//         res.redirect("/petition");
+//     }
+// });
+
+// app.get("/petition/signers", (req, res) => {
+//     if (req.session.signatureId) {
+//         // (req.cookies.authenticated)
+//         db.getSignatures()
+//             .then(({ rows }) => {
+//                 // results or directly {{rows}}
+//                 console.log("results from getSignatures:", rows); // results.rows or directly rows
+//                 res.render("signers", {
+//                     rows,
+//                 });
+//             })
+//             .catch((err) => {
+//                 console.log("err in getSignatures:", err);
+//             });
+//     } else {
+//         res.redirect("/petition");
+//     }
+// });
+
 app.listen(8080, () => console.log("petition server is listening..."));
-
-//spice pg is a middleware packet and returns promises instead of callbacks
-
-// hand sign should be made in canvas with event listeners mouse move, up and down in script.js image url is generated, to call it we need to create a fn called toDataUrl and set to value hidden input field (input type="hidden") store that value as the hidden input field with .val() method and then it's served to the sever, 3 input fields in total with name="" artibute will be sent to sever (one hidden) and then wrap all this in POST
-
-// set cookies to remember that they signed otherwise they would sign again
-
-// redirect to thank you and amount of signers
-
-//redirect to signers page
-
-// image pexels and unsplash

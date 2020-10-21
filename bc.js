@@ -11,7 +11,7 @@ module.exports.compare = compare;
 module.exports.hash = (password) =>
     genSalt().then((salt) => hash(password, salt));
 
-// password stands lainTextPassword and for "safePassword" which is hard-coded
+// password stands for plainTextPassword and for "safePassword" which is hard-coded
 
 // genSalt()
 //     .then((salt) => {
