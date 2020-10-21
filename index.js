@@ -152,56 +152,29 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
     const { age, city, url } = req.body;
-    const { id } = req.session.userId;
-    // const { cookie } = req.session;
+    const { user_id } = req.session.userId;
 
     console.log("POST request made to the / profile route");
 
     if (age || city || url) {
-        db.additionalInfo(age, city, url, id)
+        db.additionalInfo(age, city, url, user_id)
             .then(({ rows }) => {
-                req.session.userId = rows[0].id;
+                req.session.userId.profile = rows[0].id;
                 console.log("rows: ", rows);
                 res.redirect("/petition");
             })
             .catch((err) => {
                 console.log("err in additionalInfo:", err);
             });
+    } else {
+        console.log("redirected");
+        res.redirect("/petition");
     }
-
-    // else {
-    //     console.log("redirected");
-    //     res.render("petition", {
-    //         errorMessage: "Something went wrong. Please try again!",
-    //         // cookie,
-    //     });
-    // }
 });
-
-// app.get("/", (req, res) => {
-//     // console.log("req.session: ", req.session);
-//     // req.session.pimento = "bigSecret99"; // pimento is a value we can set whatever we want (eg. id from database?)
-
-//     if (!req.session.signatureId) {
-//         // (!req.cookies.authenticated)
-//         res.redirect("/petition");
-//     } else {
-//         res.redirect("/petition/thanks");
-//         console.log("already signed / redirected");
-//     }
-// });
-
-// app.get("/petition", (req, res) => {
-//     console.log("req.session: ", req.session);
-//     res.render("petition", {
-//         layouts: "main",
-//     });
-// });
 
 app.get("/petition", (req, res) => {
     console.log("req.session: ", req.session);
     const { id } = req.session.userId;
-    // const { cookie } = req.session;
 
     if (req.session.userId.signatureId) {
         res.redirect("/petition/thanks");
@@ -212,7 +185,7 @@ app.get("/petition", (req, res) => {
                 if (rows.length === 0) {
                     res.render("petition", {
                         layouts: "main",
-                        // cookie,
+                        // profile,
                     });
                 } else {
                     req.session.userId.signatureId = rows[0].id;
@@ -228,7 +201,6 @@ app.get("/petition", (req, res) => {
 app.post("/petition", (req, res) => {
     const { signature } = req.body;
     const { id } = req.session.userId;
-    // const { cookie } = req.session;
 
     console.log("POST request made to the / petition route");
 
@@ -247,13 +219,11 @@ app.post("/petition", (req, res) => {
         console.log("redirected");
         res.render("petition", {
             errorMessage: "Something went wrong. Please try again!",
-            // cookie,
         });
     }
 });
 
 app.get("/petition/thanks", (req, res) => {
-    // const { cookie } = req.session;
     if (req.session.userId.signatureId) {
         // (req.cookies.authenticated)
         db.countSignatures().then(({ rows }) => {
@@ -266,7 +236,6 @@ app.get("/petition/thanks", (req, res) => {
                         layouts: "main",
                         rows,
                         numOfSigners,
-                        // cookie,
                     });
                 })
                 .catch((err) => {
@@ -279,7 +248,6 @@ app.get("/petition/thanks", (req, res) => {
 });
 
 app.get("/petition/signers", (req, res) => {
-    // const { cookie } = req.session;
     if (req.session.userId.signatureId) {
         // (req.cookies.authenticated)
         db.getSignatures()
@@ -288,7 +256,6 @@ app.get("/petition/signers", (req, res) => {
                 console.log("results from getSignatures:", rows); // results.rows or directly rows
                 res.render("signers", {
                     rows,
-                    // cookie,
                 });
             })
             .catch((err) => {
@@ -298,73 +265,6 @@ app.get("/petition/signers", (req, res) => {
         res.redirect("/petition");
     }
 });
-
-// app.post("/petition", (req, res) => {
-//     const { signature } = req.body;
-
-//     console.log("POST request made to the / petition route");
-
-//     if (signature) {
-//         db.addSignature(signature)
-//             .then(({ rows }) => {
-//                 req.session.signatureId = rows[0].id;
-//                 console.log("rows: ", rows);
-//                 res.redirect("/petition/thanks");
-//             })
-//             .catch((err) => {
-//                 console.log("err in addSignature:", err);
-//             });
-//         // res.cookie("authenticated", true);
-//     } else {
-//         console.log("redirected");
-//         res.render("petition", {
-//             errorMessage: "Something went wrong. Please try again!",
-//         });
-//     }
-// });
-
-// app.get("/petition/thanks", (req, res) => {
-//     if (req.session.signatureId) {
-//         // (req.cookies.authenticated)
-//         db.countSignatures().then(({ rows }) => {
-//             console.log("results from countSignatures:", rows);
-//             const numOfSigners = rows[0].count;
-//             db.getSigner(req.session.signatureId)
-//                 .then(({ rows }) => {
-//                     console.log("results from getSigner:", rows); //
-//                     res.render("thanks", {
-//                         layouts: "main",
-//                         rows,
-//                         numOfSigners,
-//                     });
-//                 })
-//                 .catch((err) => {
-//                     console.log("err in countSignatures:", err);
-//                 });
-//         });
-//     } else {
-//         res.redirect("/petition");
-//     }
-// });
-
-// app.get("/petition/signers", (req, res) => {
-//     if (req.session.signatureId) {
-//         // (req.cookies.authenticated)
-//         db.getSignatures()
-//             .then(({ rows }) => {
-//                 // results or directly {{rows}}
-//                 console.log("results from getSignatures:", rows); // results.rows or directly rows
-//                 res.render("signers", {
-//                     rows,
-//                 });
-//             })
-//             .catch((err) => {
-//                 console.log("err in getSignatures:", err);
-//             });
-//     } else {
-//         res.redirect("/petition");
-//     }
-// });
 
 app.listen(process.env.PORT || 8080, () =>
     console.log("petition server is listening...")

@@ -43,7 +43,7 @@ module.exports.additionalInfo = (age, city, url, user_id) => {
         INSERT INTO user_profiles (age, city, url, user_id)
         VALUES($1, $2, $3, $4) RETURNING id`,
         [age, city, url, user_id]
-    ); //this is against sql injection attack, it tells which arrgument to escape (first id starts at $1 )
+    );
 };
 
 module.exports.getSigner = (id) => {
