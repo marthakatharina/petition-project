@@ -34,7 +34,7 @@ module.exports.addUser = (first, last, email, password) => {
 };
 
 module.exports.userInfo = (email) => {
-    return db.query(`SELECT * FROM users WHERE email = '${email}'`);
+    return db.query(`SELECT * FROM users WHERE email = $1`, [email]);
 };
 
 module.exports.additionalInfo = (age, city, url, user_id) => {
@@ -42,7 +42,7 @@ module.exports.additionalInfo = (age, city, url, user_id) => {
         `
         INSERT INTO user_profiles (age, city, url, user_id)
         VALUES($1, $2, $3, $4) RETURNING id`,
-        [age, city, url, user_id]
+        [age || null, city, url, user_id]
     );
 };
 

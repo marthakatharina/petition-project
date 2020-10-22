@@ -2,9 +2,11 @@
 
 
 <div>
-    {{#rows}}
-    <p>{{first}} {{last}} {{age}}   <a href="/petition/signers/{{city}}" target="_blank">{{city}}</a> {{url}}</p> 
+    {{#rows}} 
+    <p><a href="{{url}}" target="_blank">{{first}} {{last}}</a> {{age}}   <a href="/petition/signers/{{city}}">{{city}}</a></p> 
    
     {{/rows}}
     </div>
 
+{{!-- partials vor users with and without a url --}}
+{{!-- make sure that the url we get from the user starts with http or https --}}
