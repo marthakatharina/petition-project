@@ -53,3 +53,10 @@ module.exports.getSigner = (id) => {
 module.exports.countSignatures = () => {
     return db.query(`SELECT count(*) FROM signatures`);
 };
+
+module.exports.getSignersByCity = (city) => {
+    return db.query(
+        `SELECT signatures.id AS id, users.first AS first, users.last AS last, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url FROM signatures JOIN users ON signatures.user_id = users.id LEFT OUTER JOIN user_profiles ON signatures.user_id = user_profiles.user_id WHERE LOWER(city) = LOWER($1)`,
+        [city]
+    );
+};

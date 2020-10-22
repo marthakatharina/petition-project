@@ -266,6 +266,31 @@ app.get("/petition/signers", (req, res) => {
     }
 });
 
+app.get("/petition/signers/:city", (req, res) => {
+    const { city } = req.params;
+
+    if (req.session.userId.signatureId) {
+        if (!city) {
+            res.sendStatus(404);
+        } else {
+            db.getSignersByCity(city)
+                .then(({ rows }) => {
+                    console.log("results from getSignersByCity:", rows);
+
+                    res.render("city", {
+                        layout: "main",
+                        // selectedCity,
+                        // users_profiles,
+                        rows,
+                    });
+                })
+                .catch((err) => {
+                    console.log("err in getSignersByCity:", err);
+                });
+        }
+    }
+});
+
 app.listen(process.env.PORT || 8080, () =>
     console.log("petition server is listening...")
 );
