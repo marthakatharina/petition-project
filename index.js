@@ -152,12 +152,12 @@ app.get("/profile", (req, res) => {
 
 app.post("/profile", (req, res) => {
     const { age, city, url } = req.body;
-    const { user_id } = req.session.userId;
+    const { id } = req.session.userId; // {id} relates to req.session.userId defined in register route. It is ES6 for req.session.userId.id.
 
     console.log("POST request made to the / profile route");
 
     if (age || city || url) {
-        db.additionalInfo(age, city, url, user_id)
+        db.additionalInfo(age, city, url, id)
             .then(({ rows }) => {
                 req.session.userId.profile = rows[0].id;
                 console.log("rows: ", rows);
