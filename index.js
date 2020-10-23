@@ -21,14 +21,14 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-// app.use(csurf());
+app.use(csurf());
 
-// app.use(function (req, res, next) {
-//     // this type of middleware runs for every route
-//     res.set("x-frame-options", "DENY"); // or "SAMEORGIN"
-//     res.locals.csrfToken = req.csrfToken();
-//     next();
-// });
+app.use(function (req, res, next) {
+    // this type of middleware runs for every route
+    res.set("x-frame-options", "DENY"); // or "SAMEORGIN"
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 
 app.use(express.static("./public"));
 
@@ -335,6 +335,51 @@ app.get(
         }
     }
 );
+
+app.get(
+    "/profile/edit",
+    requireLoggedInUser,
+
+    (req, res) => {
+        if (req.session.userId) {
+            db.letEdit()
+                .then(({ rows }) => {
+                    console.log("results from letEdit:", rows);
+
+                    res.render("edit", {
+                        layout: "main",
+
+                        rows,
+                    });
+                })
+                .catch((err) => {
+                    console.log("err in letEdit:", err);
+                });
+        } else {
+            res.redirect("/profile");
+        }
+    }
+);
+
+app.post("/profile/edit", requireLoggedInUser, (req, res) => {
+    const { first, last, email, password, age, city, url } = req.body;
+    const { id } = req.session.userId;
+
+    if (first || last || email || password == "" || age || city || url) {
+        db.updateNoPw(first, last, email, id)
+            .then(({ rows }) => {
+                // req.session.userId.profile = rows[0].id;
+                console.log("rows: ", rows);
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in updateNoPw:", err);
+            });
+    } else {
+        console.log("redirected, skipped profile update");
+        res.redirect("/petition");
+    }
+});
 
 app.listen(process.env.PORT || 8080, () =>
     console.log("petition server is listening...")

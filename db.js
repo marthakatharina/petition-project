@@ -60,3 +60,18 @@ module.exports.getSignersByCity = (city) => {
         [city]
     );
 };
+
+module.exports.letEdit = (user_id) => {
+    return db.query(
+        `SELECT users.first AS first, users.last AS last, users.email AS email, user_profiles.age AS age, user_profiles.city AS city, user_profiles.url AS url FROM users JOIN user_profiles ON users.id = user_profiles.user_id WHERE user_id = $1`,
+        [user_id]
+    );
+};
+
+module.exports.updateNoPw = (first, last, email, id) => {
+    return db.query(
+        `
+        UPDATE users set first = $1 , last = $2, email = $3 WHERE id = $4 RETURNING id`,
+        [first, last, email, id]
+    );
+};
