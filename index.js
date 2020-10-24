@@ -360,39 +360,62 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     const { id } = req.session.userId;
 
     if (firstname || lastname || email || password || age || city || url) {
-        if (password == "") {
-            db.userInfo(email).then(({ rows }) => {
-                db.updateNoPw(firstname, lastname, email, id)
+        if (firstname && lastname && email) {
+            if (password == "") {
+                db.userInfo(email).then(({ rows }) => {
+                    db.updateNoPw(firstname, lastname, email, id)
+                        .then(({ rows }) => {
+                            // req.session.userId.profile = rows[0].id;
+                            console.log("rows: ", rows);
+                            res.redirect("/petition");
+                        })
+                        .catch((err) => {
+                            console.log("err in updateNoPw:", err);
+                        });
+                });
+            } else if (password != "") {
+                hash(password)
+                    .then((hashedPw) => {
+                        console.log("hashedPw /profile/edit:", hashedPw);
+                    })
+                    .catch((err) => {
+                        console.log("err in hash password:", err);
+                    });
+                db.updateWithPW(firstname, lastname, email, password, id)
                     .then(({ rows }) => {
-                        // req.session.userId.profile = rows[0].id;
                         console.log("rows: ", rows);
                         res.redirect("/petition");
                     })
                     .catch((err) => {
-                        console.log("err in updateNoPw:", err);
+                        console.log("err in updateWithPw:", err);
                     });
-            });
-        } else if (password != "") {
-            hash(password)
-                .then((hashedPw) => {
-                    console.log("hashedPw /profile/edit:", hashedPw);
-                })
-                .catch((err) => {
-                    console.log("err in hash password:", err);
-                });
-            db.updateWithPW(firstname, lastname, email, password, id)
+            }
+        } else {
+            db.upsertInfo(age, city, url, id)
                 .then(({ rows }) => {
                     console.log("rows: ", rows);
                     res.redirect("/petition");
                 })
                 .catch((err) => {
-                    console.log("err in updateWithPw:", err);
+                    console.log("err in upsertInfo:", err);
                 });
         }
     } else {
         console.log("redirected, skipped profile update");
         res.redirect("/petition");
     }
+});
+
+app.post("/delete/signature", (req, res) => {
+    const { id } = req.session.userId;
+    db.deleteSignature(id)
+        .then(() => {
+            req.session.userId.signatureId = null;
+            res.redirect("/petition");
+        })
+        .catch((err) => {
+            console.log("error in deleteSignature", err);
+        });
 });
 
 app.listen(process.env.PORT || 8080, () =>

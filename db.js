@@ -100,3 +100,12 @@ module.exports.updateWithPW = (first, last, email, password, id) => {
         [first, last, email, password, id]
     );
 };
+
+module.exports.deleteSignature = (user_id) => {
+    return db.query(
+        `
+        DELETE FROM signatures WHERE user_id=$1
+        `,
+        [user_id]
+    );
+};
