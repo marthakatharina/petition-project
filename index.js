@@ -101,9 +101,6 @@ app.post(
                         });
                 }
             });
-            // .catch((err) => {
-            //     console.log("err in POST :", err);
-            // });
         } else if (!firstname || !lastname || !email || !password) {
             console.log("redirected");
             res.render("register", {
@@ -284,8 +281,6 @@ app.get(
 
                         res.render("city", {
                             layout: "main",
-                            // selectedCity,
-                            // users_profiles,
                             rows,
                         });
                     })
@@ -359,50 +354,50 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     const { firstname, lastname, email, password, age, city, url } = req.body;
     const { id } = req.session.userId;
 
-    if (firstname || lastname || email || password || age || city || url) {
-        if (firstname && lastname && email) {
-            if (password == "") {
-                db.userInfo(email).then(({ rows }) => {
-                    db.updateNoPw(firstname, lastname, email, id)
-                        .then(({ rows }) => {
-                            // req.session.userId.profile = rows[0].id;
-                            console.log("rows: ", rows);
-                            res.redirect("/petition");
-                        })
-                        .catch((err) => {
-                            console.log("err in updateNoPw:", err);
-                        });
-                });
-            } else if (password != "") {
-                hash(password)
-                    .then((hashedPw) => {
-                        console.log("hashedPw /profile/edit:", hashedPw);
-                    })
-                    .catch((err) => {
-                        console.log("err in hash password:", err);
-                    });
-                db.updateWithPW(firstname, lastname, email, password, id)
+    if (firstname != "" && lastname != "" && email != "") {
+        if (password == "") {
+            db.userInfo(email).then(({ rows }) => {
+                db.updateNoPw(firstname, lastname, email, id)
                     .then(({ rows }) => {
                         console.log("rows: ", rows);
                         res.redirect("/petition");
                     })
                     .catch((err) => {
-                        console.log("err in updateWithPw:", err);
+                        console.log("err in updateNoPw:", err);
                     });
-            }
-        } else {
-            db.upsertInfo(age, city, url, id)
+            });
+        } else if (password != "") {
+            hash(password)
+                .then((hashedPw) => {
+                    console.log("hashedPw /profile/edit:", hashedPw);
+                })
+                .catch((err) => {
+                    console.log("err in hash password:", err);
+                });
+            db.updateWithPW(firstname, lastname, email, password, id)
                 .then(({ rows }) => {
                     console.log("rows: ", rows);
                     res.redirect("/petition");
                 })
                 .catch((err) => {
-                    console.log("err in upsertInfo:", err);
+                    console.log("err in updateWithPw:", err);
                 });
         }
+
+        db.upsertInfo(age, city, url, id)
+            .then(({ rows }) => {
+                console.log("rows: ", rows);
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in upsertInfo:", err);
+            });
     } else {
-        console.log("redirected, skipped profile update");
-        res.redirect("/petition");
+        res.render("edit", {
+            layout: "main",
+            errorMessage:
+                "Fist Name, Last Name and Email Address are required!",
+        });
     }
 });
 
