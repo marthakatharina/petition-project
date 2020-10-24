@@ -6,6 +6,7 @@ const handlebars = require("express-handlebars");
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
 const bcrypt = require("./bc");
+const { hash } = require("./bc");
 
 app.engine("handlebars", handlebars());
 app.set("view engine", "handlebars");
@@ -31,13 +32,6 @@ app.use(function (req, res, next) {
 });
 
 app.use(express.static("./public"));
-
-// const againstCookieAttacks = (req, res, next) => {
-//     // this type of middleware runs for every route
-//     res.setHeader("x-frame-options", "DENY"); // or "SAMEORGIN"
-//     // res.locals.csrfToken = req.csrfToken();
-//     next();
-// };
 
 const requireLoggedOutUser = (req, res, next) => {
     if (req.session.userId) {
@@ -166,39 +160,6 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
         res.render("login", {
             errorMessage: "Something went wrong. Please try again!",
         });
-    }
-});
-
-app.get("/profile", (req, res) => {
-    // or requireLoggedInUser
-    if (req.session.userId) {
-        res.render("profile", {
-            layouts: "main",
-        });
-    } else {
-        res.redirect("/register");
-    }
-});
-
-app.post("/profile", requireLoggedInUser, (req, res) => {
-    const { age, city, url } = req.body;
-    const { id } = req.session.userId; // {id} relates to req.session.userId defined in register route. It is ES6 for req.session.userId.id.
-
-    console.log("POST request made to the / profile route");
-
-    if (age || city || url) {
-        db.additionalInfo(age, city, url, id)
-            .then(({ rows }) => {
-                req.session.userId.profile = rows[0].id;
-                console.log("rows: ", rows);
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("err in additionalInfo:", err);
-            });
-    } else {
-        console.log("redirected, skipped profile");
-        res.redirect("/petition");
     }
 });
 
@@ -336,6 +297,39 @@ app.get(
     }
 );
 
+app.get("/profile", (req, res) => {
+    // or requireLoggedInUser
+    if (req.session.userId) {
+        res.render("profile", {
+            layouts: "main",
+        });
+    } else {
+        res.redirect("/register");
+    }
+});
+
+app.post("/profile", requireLoggedInUser, (req, res) => {
+    const { age, city, url } = req.body;
+    const { id } = req.session.userId; // {id} relates to req.session.userId defined in register route. It is ES6 for req.session.userId.id.
+
+    console.log("POST request made to the / profile route");
+
+    if (age || city || url) {
+        db.additionalInfo(age, city, url, id)
+            .then(({ rows }) => {
+                req.session.userId.profile = rows[0].id;
+                console.log("rows: ", rows);
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in additionalInfo:", err);
+            });
+    } else {
+        console.log("redirected, skipped profile");
+        res.redirect("/petition");
+    }
+});
+
 app.get(
     "/profile/edit",
     requireLoggedInUser,
@@ -362,19 +356,39 @@ app.get(
 );
 
 app.post("/profile/edit", requireLoggedInUser, (req, res) => {
-    const { first, last, email, password, age, city, url } = req.body;
+    const { firstname, lastname, email, password, age, city, url } = req.body;
     const { id } = req.session.userId;
 
-    if (first || last || email || password == "" || age || city || url) {
-        db.updateNoPw(first, last, email, id)
-            .then(({ rows }) => {
-                // req.session.userId.profile = rows[0].id;
-                console.log("rows: ", rows);
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("err in updateNoPw:", err);
+    if (firstname || lastname || email || password || age || city || url) {
+        if (password == "") {
+            db.userInfo(email).then(({ rows }) => {
+                db.updateNoPw(firstname, lastname, email, id)
+                    .then(({ rows }) => {
+                        // req.session.userId.profile = rows[0].id;
+                        console.log("rows: ", rows);
+                        res.redirect("/petition");
+                    })
+                    .catch((err) => {
+                        console.log("err in updateNoPw:", err);
+                    });
             });
+        } else if (password != "") {
+            hash(password)
+                .then((hashedPw) => {
+                    console.log("hashedPw /profile/edit:", hashedPw);
+                })
+                .catch((err) => {
+                    console.log("err in hash password:", err);
+                });
+            db.updateWithPW(firstname, lastname, email, password, id)
+                .then(({ rows }) => {
+                    console.log("rows: ", rows);
+                    res.redirect("/petition");
+                })
+                .catch((err) => {
+                    console.log("err in updateWithPw:", err);
+                });
+        }
     } else {
         console.log("redirected, skipped profile update");
         res.redirect("/petition");

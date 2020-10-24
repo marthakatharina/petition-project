@@ -75,3 +75,28 @@ module.exports.updateNoPw = (first, last, email, id) => {
         [first, last, email, id]
     );
 };
+
+module.exports.upsertInfo = (age, city, url, user_id) => {
+    return db.query(
+        `
+        INSERT INTO user_profiles (age, city, url, user_id)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (user_id)
+        DO UPDATE SET age = $1, city = $2, url = $3
+        RETURNING id
+    `,
+        [age || null, city, url, user_id]
+    );
+};
+
+module.exports.updateWithPW = (first, last, email, password, id) => {
+    return db.query(
+        `
+        UPDATE users 
+        SET first = $1, last=$2, email=$3, password=$4
+        WHERE id = $5
+        RETURNING *
+    `,
+        [first, last, email, password, id]
+    );
+};
