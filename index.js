@@ -98,6 +98,11 @@ app.post(
                         .catch((err) => {
                             console.log("err in userInfo:", err);
                         });
+                } else {
+                    res.render("register", {
+                        errorMessage:
+                            "An account with this email already exists.",
+                    });
                 }
             });
         } else if (!firstname || !lastname || !email || !password) {
@@ -145,7 +150,7 @@ app.post("/login", requireLoggedOutUser, (req, res) => {
                     });
                 } else {
                     res.render("login", {
-                        errorMessage: "Invalid login or password!",
+                        errorMessage: "Invalid email or password!",
                     });
                 }
             })
