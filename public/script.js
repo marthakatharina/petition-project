@@ -24,3 +24,43 @@ canvasJQ.on("mousedown", (e) => {
         signature.val(canvas.toDataURL());
     });
 });
+
+// var openNav = document.getElementById("menu");
+
+// var closeNav = document.getElementById("close");
+
+// var overlay = document.querySelector(".overlay");
+
+// var sideNav = document.querySelector(".navbar");
+
+// $(".menu").on("click", function () {
+//     $(".navbar").classList.add("on");
+// });
+
+// $(".close").on("click", function () {
+//     $(".navbar").classList.remove("on");
+// });
+
+// $(".navbar").on("click", function (e) {
+//     e.stopPropagation();
+// });
+
+// $(".menu").on("click", function () {
+//     $(".navbar").toggleClass("on");
+// });
+
+// (function () {
+//     var navBar = document.getElementById("side-nav");
+//     var openNav = document.getElementById("nav");
+//     var closeNav = document.getElementById("close-x");
+
+//     openNav.addEventListener("click", function () {
+//         navBar.classList.add("overlay");
+//         navBar.style.visibility = "visible";
+//     });
+
+//     closeNav.addEventListener("click", function () {
+//         navBar.classList.remove("overlay");
+//         navBar.style.visibility = "hidden";
+//     });
+// })();

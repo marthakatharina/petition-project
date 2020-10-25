@@ -110,14 +110,14 @@ app.post(
 );
 
 app.get("/login", requireLoggedOutUser, (req, res) => {
-    if (req.session.userId) {
-        res.render("login", {
-            layouts: "main",
-        });
-    } else {
-        res.redirect("/register");
-        console.log("not registered / redirected to register");
-    }
+    // if (req.session.userId) {
+    res.render("login", {
+        layouts: "main",
+    });
+    // } else {
+    //     res.redirect("/register");
+    //     console.log("not registered / redirected to register");
+    // }
 });
 
 app.post("/login", requireLoggedOutUser, (req, res) => {
@@ -313,19 +313,27 @@ app.post("/profile", requireLoggedInUser, (req, res) => {
 
     console.log("POST request made to the / profile route");
 
-    if (age || city || url) {
-        db.additionalInfo(age, city, url, id)
-            .then(({ rows }) => {
-                req.session.userId.profile = rows[0].id;
-                console.log("rows: ", rows);
-                res.redirect("/petition");
-            })
-            .catch((err) => {
-                console.log("err in additionalInfo:", err);
-            });
+    if (!req.session.userId.profile) {
+        if (age || city || url) {
+            db.additionalInfo(age, city, url, id)
+                .then(({ rows }) => {
+                    req.session.userId.profile = rows[0].id;
+                    console.log("rows: ", rows);
+                    res.redirect("/petition");
+                })
+                .catch((err) => {
+                    console.log("err in additionalInfo:", err);
+                });
+        } else {
+            console.log("redirected, skipped profile");
+            res.redirect("/petition");
+        }
     } else {
-        console.log("redirected, skipped profile");
-        res.redirect("/petition");
+        // res.redirect("/profile/edit");
+        res.render("edit", {
+            layout: "main",
+            errorMessage: "Sorry, you cannot edit your profile here",
+        });
     }
 });
 
@@ -432,57 +440,6 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     }
 });
 
-// app.post("/profile/edit", requireLoggedInUser, (req, res) => {
-//     const { firstname, lastname, email, password, age, city, url } = req.body;
-//     const { id } = req.session.userId;
-
-//     if (firstname != "" && lastname != "" && email != "") {
-//         if (password == "") {
-//             db.userInfo(email).then(({ rows }) => {
-//                 db.updateNoPw(firstname, lastname, email, id)
-//                     .then(({ rows }) => {
-//                         console.log("rows: ", rows);
-//                         res.redirect("/petition");
-//                     })
-//                     .catch((err) => {
-//                         console.log("err in updateNoPw:", err);
-//                     });
-//             });
-//         } else if (password != "") {
-//             hash(password)
-//                 .then((hashedPw) => {
-//                     console.log("hashedPw /profile/edit:", hashedPw);
-//                 })
-//                 .catch((err) => {
-//                     console.log("err in hash password:", err);
-//                 });
-//             db.updateWithPW(firstname, lastname, email, password, id)
-//                 .then(({ rows }) => {
-//                     console.log("rows: ", rows);
-//                     res.redirect("/petition");
-//                 })
-//                 .catch((err) => {
-//                     console.log("err in updateWithPw:", err);
-//                 });
-//         }
-
-//         db.upsertInfo(age, city, url, id)
-//             .then(({ rows }) => {
-//                 console.log("rows: ", rows);
-//                 res.redirect("/petition");
-//             })
-//             .catch((err) => {
-//                 console.log("err in upsertInfo:", err);
-//             });
-//     } else {
-//         res.render("edit", {
-//             layout: "main",
-//             errorMessage:
-//                 "Fist Name, Last Name and Email Address are required!",
-//         });
-//     }
-// });
-
 app.post("/delete/signature", requireLoggedInUser, (req, res) => {
     const { id } = req.session.userId;
     db.deleteSignature(id)
@@ -493,6 +450,11 @@ app.post("/delete/signature", requireLoggedInUser, (req, res) => {
         .catch((err) => {
             console.log("error in deleteSignature", err);
         });
+});
+
+app.get("/logout", (req, res) => {
+    req.session = null;
+    res.redirect("/login");
 });
 
 app.listen(process.env.PORT || 8080, () =>
