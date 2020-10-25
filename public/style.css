@@ -6,11 +6,15 @@ input,
 canvas,
 button {
     margin-top: 20px;
-    background-color: white;
+    background-color: transparent;
 }
 
 form {
     display: flex;
     flex-direction: column;
     width: 250px;
+}
+
+.no-url {
+    text-decoration: none;
 }

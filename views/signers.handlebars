@@ -3,7 +3,17 @@
 
 <div>
     {{#rows}} 
+
+    {{#if url}}
+
     <p><a href="{{url}}" target="_blank">{{first}} {{last}}</a> {{age}}   <a href="/petition/signers/{{city}}">{{city}}</a></p> 
+
+    {{else}}
+
+    <p><a class="no-url" href="{{url}}" target="_blank">{{first}} {{last}}</a> {{age}}   <a href="/petition/signers/{{city}}">{{city}}</a></p> 
+
+
+    {{/if}}   
    
     {{/rows}}
     </div>

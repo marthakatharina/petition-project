@@ -416,7 +416,7 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
                     res.render("edit", {
                         layout: "main",
                         errorMessage:
-                            "Sorry, this email is already taken by anther user.",
+                            "Sorry, this email is already taken by another user.",
                     });
                 }
             })
