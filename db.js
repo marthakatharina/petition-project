@@ -20,8 +20,11 @@ module.exports.addSignature = (signature, user_id) => {
 };
 
 module.exports.checkIfSigned = (id) => {
-    return db.query(`SELECT * FROM signatures WHERE user_id IN
-    (SELECT id FROM users WHERE id = ${id})`);
+    return db.query(
+        `SELECT * FROM signatures WHERE user_id IN
+    (SELECT id FROM users WHERE id = $1)`,
+        [id]
+    );
 };
 
 module.exports.addUser = (first, last, email, password) => {
@@ -47,7 +50,7 @@ module.exports.additionalInfo = (age, city, url, user_id) => {
 };
 
 module.exports.getSigner = (id) => {
-    return db.query(`SELECT * FROM signatures WHERE id = ${id} `);
+    return db.query(`SELECT * FROM signatures WHERE id = $1 `, [id]);
 };
 
 module.exports.countSignatures = () => {
@@ -92,13 +95,20 @@ module.exports.upsertInfo = (age, city, url, user_id) => {
 module.exports.updateWithPW = (first, last, email, password, id) => {
     return db.query(
         `
-        UPDATE users 
+        UPDATE users
         SET first = $1, last=$2, email=$3, password=$4
         WHERE id = $5
         RETURNING *
     `,
         [first, last, email, password, id]
     );
+};
+
+exports.updatePassword = (hash, id) => {
+    return db.query(`UPDATE users SET password = $1 WHERE id = $2 `, [
+        hash,
+        id,
+    ]);
 };
 
 module.exports.deleteSignature = (user_id) => {

@@ -6,7 +6,6 @@ const handlebars = require("express-handlebars");
 const cookieSession = require("cookie-session");
 const csurf = require("csurf");
 const bcrypt = require("./bc");
-const { hash } = require("./bc");
 
 app.engine("handlebars", handlebars());
 app.set("view engine", "handlebars");
@@ -292,14 +291,19 @@ app.get(
     }
 );
 
-app.get("/profile", (req, res) => {
+app.get("/profile", requireLoggedInUser, (req, res) => {
     // or requireLoggedInUser
-    if (req.session.userId) {
+    if (!req.session.userId.signatureId && !req.session.userId.profile) {
+        // if (req.session.userId) {
         res.render("profile", {
             layouts: "main",
         });
+        // } else {
+        //     res.redirect("/register");
+        // }
     } else {
-        res.redirect("/register");
+        console.log("redirected / profile/edit");
+        res.redirect("/profile/edit");
     }
 });
 
@@ -330,10 +334,12 @@ app.get(
     requireLoggedInUser,
 
     (req, res) => {
+        const { id } = req.session.userId;
         if (req.session.userId) {
-            db.letEdit()
+            db.letEdit(id)
                 .then(({ rows }) => {
                     console.log("results from letEdit:", rows);
+                    req.session.userId.userEmail = rows[0].email;
 
                     res.render("edit", {
                         layout: "main",
@@ -345,7 +351,7 @@ app.get(
                     console.log("err in letEdit:", err);
                 });
         } else {
-            res.redirect("/profile");
+            res.redirect("/register");
         }
     }
 );
@@ -355,42 +361,67 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     const { id } = req.session.userId;
 
     if (firstname != "" && lastname != "" && email != "") {
-        if (password == "") {
-            db.userInfo(email).then(({ rows }) => {
-                db.updateNoPw(firstname, lastname, email, id)
-                    .then(({ rows }) => {
-                        console.log("rows: ", rows);
-                        res.redirect("/petition");
-                    })
-                    .catch((err) => {
-                        console.log("err in updateNoPw:", err);
-                    });
-            });
-        } else if (password != "") {
-            hash(password)
-                .then((hashedPw) => {
-                    console.log("hashedPw /profile/edit:", hashedPw);
-                })
-                .catch((err) => {
-                    console.log("err in hash password:", err);
-                });
-            db.updateWithPW(firstname, lastname, email, password, id)
-                .then(({ rows }) => {
-                    console.log("rows: ", rows);
-                    res.redirect("/petition");
-                })
-                .catch((err) => {
-                    console.log("err in updateWithPw:", err);
-                });
-        }
-
-        db.upsertInfo(age, city, url, id)
+        // if (password == "") {
+        db.userInfo(email)
             .then(({ rows }) => {
                 console.log("rows: ", rows);
-                res.redirect("/petition");
+                if (
+                    rows.length === 0 ||
+                    req.session.userId.userEmail === rows[0].email
+                ) {
+                    if (password == "") {
+                        db.updateNoPw(firstname, lastname, email, id)
+                            .then(({ rows }) => {
+                                console.log("rows: ", rows);
+                                res.redirect("/petition");
+                            })
+                            .catch((err) => {
+                                console.log("err in updateNoPw:", err);
+                            });
+                    } else if (password != "") {
+                        bcrypt
+                            .hash(password)
+                            .then((hash) => {
+                                console.log("hashedPw in profile/edit:", hash);
+                                db.updatePassword(hash, id);
+                            })
+                            .catch((err) => {
+                                console.log("err in hash password:", err);
+                            });
+                        db.updateWithPW(
+                            firstname,
+                            lastname,
+                            email,
+                            password,
+                            id
+                        )
+                            .then(({ rows }) => {
+                                console.log("rows: ", rows);
+                                res.redirect("/petition");
+                            })
+                            .catch((err) => {
+                                console.log("err in updateWithPw:", err);
+                            });
+                    }
+
+                    db.upsertInfo(age, city, url, id)
+                        .then(({ rows }) => {
+                            console.log("rows: ", rows);
+                            res.redirect("/petition");
+                        })
+                        .catch((err) => {
+                            console.log("err in upsertInfo:", err);
+                        });
+                } else {
+                    res.render("edit", {
+                        layout: "main",
+                        errorMessage:
+                            "Sorry, this email is already taken by anther user.",
+                    });
+                }
             })
             .catch((err) => {
-                console.log("err in upsertInfo:", err);
+                console.log("err in userInfo email already in db:", err);
             });
     } else {
         res.render("edit", {
@@ -401,7 +432,58 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     }
 });
 
-app.post("/delete/signature", (req, res) => {
+// app.post("/profile/edit", requireLoggedInUser, (req, res) => {
+//     const { firstname, lastname, email, password, age, city, url } = req.body;
+//     const { id } = req.session.userId;
+
+//     if (firstname != "" && lastname != "" && email != "") {
+//         if (password == "") {
+//             db.userInfo(email).then(({ rows }) => {
+//                 db.updateNoPw(firstname, lastname, email, id)
+//                     .then(({ rows }) => {
+//                         console.log("rows: ", rows);
+//                         res.redirect("/petition");
+//                     })
+//                     .catch((err) => {
+//                         console.log("err in updateNoPw:", err);
+//                     });
+//             });
+//         } else if (password != "") {
+//             hash(password)
+//                 .then((hashedPw) => {
+//                     console.log("hashedPw /profile/edit:", hashedPw);
+//                 })
+//                 .catch((err) => {
+//                     console.log("err in hash password:", err);
+//                 });
+//             db.updateWithPW(firstname, lastname, email, password, id)
+//                 .then(({ rows }) => {
+//                     console.log("rows: ", rows);
+//                     res.redirect("/petition");
+//                 })
+//                 .catch((err) => {
+//                     console.log("err in updateWithPw:", err);
+//                 });
+//         }
+
+//         db.upsertInfo(age, city, url, id)
+//             .then(({ rows }) => {
+//                 console.log("rows: ", rows);
+//                 res.redirect("/petition");
+//             })
+//             .catch((err) => {
+//                 console.log("err in upsertInfo:", err);
+//             });
+//     } else {
+//         res.render("edit", {
+//             layout: "main",
+//             errorMessage:
+//                 "Fist Name, Last Name and Email Address are required!",
+//         });
+//     }
+// });
+
+app.post("/delete/signature", requireLoggedInUser, (req, res) => {
     const { id } = req.session.userId;
     db.deleteSignature(id)
         .then(() => {
