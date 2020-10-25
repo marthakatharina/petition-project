@@ -8,6 +8,9 @@ body {
 
     display: flex;
     flex-wrap: wrap;
+
+    height: 100%;
+    width: 100%;
 }
 
 input,
@@ -43,28 +46,10 @@ main {
     margin: 10%;
 }
 
-.text-container {
-}
-
-.stop-word {
-    font-size: 50px;
-    margin: 0;
-    text-align: right;
-}
-
-.hate-word {
-    font-size: 200px;
-    text-decoration: line-through;
-    text-decoration-color: red;
-    margin: 0;
-}
-
-.menu {
-    width: 50px;
-    height: 50px;
-}
-.nav {
+.form-container {
     margin: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .error {
@@ -72,6 +57,97 @@ main {
     font-style: italic;
 }
 
-.signature-container {
+.text-container {
+    margin: 0;
+    padding: 0;
+}
+
+.stop {
+    font-size: 50px;
+    margin: 0;
+    text-align: right;
+}
+
+.hate {
+    font-size: 200px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    margin: 0;
+}
+
+.stop-word {
+    font-size: 40px;
+    margin: 0;
+    text-align: right;
+}
+
+.hate-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    margin: 0;
+    text-align: right;
+}
+
+.racism-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    text-align: right;
+    margin: 0;
+}
+
+.bullying-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    text-align: right;
+    margin: 0;
+}
+
+.misogyny-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    text-align: right;
+    margin: 0;
+}
+
+.homophobia-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    text-align: right;
+    margin: 0;
+}
+
+.discrimination-word {
+    font-size: 60px;
+    text-decoration: line-through;
+    text-decoration-color: red;
+    text-align: right;
+    margin: 0;
+}
+
+.main-container {
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 10%;
+    margin-top: 4%;
+    margin-right: 4%;
+}
+
+.login-txt {
+    margin-top: 10px;
+}
+
+a {
+    color: red;
+}
+
+.signers {
+    text-align: right;
+    margin: 20px;
 }

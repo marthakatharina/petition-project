@@ -313,27 +313,19 @@ app.post("/profile", requireLoggedInUser, (req, res) => {
 
     console.log("POST request made to the / profile route");
 
-    if (!req.session.userId.profile) {
-        if (age || city || url) {
-            db.additionalInfo(age, city, url, id)
-                .then(({ rows }) => {
-                    req.session.userId.profile = rows[0].id;
-                    console.log("rows: ", rows);
-                    res.redirect("/petition");
-                })
-                .catch((err) => {
-                    console.log("err in additionalInfo:", err);
-                });
-        } else {
-            console.log("redirected, skipped profile");
-            res.redirect("/petition");
-        }
+    if (age || city || url) {
+        db.additionalInfo(age, city, url, id)
+            .then(({ rows }) => {
+                req.session.userId.profile = rows[0].id;
+                console.log("rows: ", rows);
+                res.redirect("/petition");
+            })
+            .catch((err) => {
+                console.log("err in additionalInfo:", err);
+            });
     } else {
-        // res.redirect("/profile/edit");
-        res.render("edit", {
-            layout: "main",
-            errorMessage: "Sorry, you cannot edit your profile here",
-        });
+        console.log("redirected, skipped profile");
+        res.redirect("/petition");
     }
 });
 

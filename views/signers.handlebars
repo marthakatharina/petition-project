@@ -1,7 +1,10 @@
+
+<div class="form-container">
+
 <h1>Here are all the people who have signed the petition so far:</h1>
 
 
-<div>
+<div class="signers">
     {{#rows}} 
 
     {{#if url}}
@@ -10,7 +13,7 @@
 
     {{else}}
 
-    <p><a class="no-url" href="{{url}}" target="_blank">{{first}} {{last}}</a> {{age}}   <a href="/petition/signers/{{city}}">{{city}}</a></p> 
+    <p><a class="no-url" href="{{url}}">{{first}} {{last}}</a> {{age}}   <a href="/petition/signers/{{city}}">{{city}}</a></p> 
 
 
     {{/if}}   
@@ -18,5 +21,6 @@
     {{/rows}}
     </div>
 
-{{!-- partials vor users with and without a url --}}
-{{!-- make sure that the url we get from the user starts with http or https --}}
+
+
+</div>
