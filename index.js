@@ -431,8 +431,7 @@ app.post("/profile/edit", requireLoggedInUser, (req, res) => {
     } else {
         res.render("edit", {
             layout: "main",
-            errorMessage:
-                "Fist Name, Last Name and Email Address are required!",
+            errorMessage: "First Name, Last Name and Email are required!",
         });
     }
 });
