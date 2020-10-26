@@ -1,3 +1,5 @@
+ <header><button class="logout"><a class="b" href="/logout">Logout</a></button></header>
+
 <div class="form-container">
 
 <h1>Thank you for signing!</h1>
@@ -13,8 +15,12 @@
 
 <a href="/petition/signers"><h2>See all {{numOfSigners}} signers</h2></a>
 
+<a href="/profile/edit"><h2>Edit your profile</h2></a>
+
 <form method='POST' action='/delete/signature'>
 <button class="button-link">delete your signature</button>{{>csrf}}</form>
+
+
 
 </div>
 
