@@ -449,7 +449,7 @@ app.post("/delete/signature", requireLoggedInUser, (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
-    req.session = null;
+    req.session.userId = null;
     res.redirect("/login");
 });
 

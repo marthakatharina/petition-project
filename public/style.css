@@ -6,10 +6,12 @@ body {
     background-color: white;
     font-family: "Montserrat", sans-serif;
 
-    display: flex;
-    flex-wrap: wrap;
+    /* display: flex;
+    flex-direction: column;
+    flex-wrap: wrap; */
     height: 100%;
     width: 100%;
+    overflow-x: hidden;
 }
 
 input,
@@ -20,9 +22,10 @@ button {
     border: 2px solid black;
     font-family: "Montserrat", sans-serif;
     color: red;
+    padding: 5px;
 }
 
-button:active {
+button:hover {
     background-color: black;
     color: white;
 }
@@ -129,11 +132,9 @@ main {
 
 .main-container {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-left: 15%;
-    margin-top: 5%;
+    justify-content: space-between;
+    margin: 1% 4%;
+    /* margin-top: 4%; */
 }
 
 .login-txt {
@@ -146,15 +147,84 @@ a {
 
 .signers {
     text-align: right;
-    margin: 20px;
+    /* margin: 20px; */
 }
 
 .logout {
-    position: absolute;
-    left: 91%;
-    margin-top: 20px;
+    margin-right: 20px;
+}
+
+header {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+main {
+    display: flex;
+    flex-direction: row;
 }
 
 .b {
     text-decoration: none;
+}
+
+.side-nav {
+    position: absolute;
+    background-color: white;
+    /* left: -25%; */
+    right: 100%;
+    height: 100%;
+    top: 0;
+    width: 25%;
+    padding-left: 25px;
+    z-index: 2;
+    transition: 1s;
+}
+
+.side-nav-display {
+    transition-property: transform;
+    transition-duration: 1s;
+    transform: translateX(100%);
+}
+
+/* .overlay {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    top: 0;
+    visibility: hidden;
+} */
+
+/* .on {
+    visibility: visible;
+    transition: 2s;
+} */
+
+#x {
+    text-align: left;
+    font-size: 30px;
+    font-family: "Montserrat", sans-serif;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-bottom: 15px;
+    /* padding-top: 10px; */
+}
+
+#menu {
+    float: left;
+    margin-left: 20px;
+    /* padding-top: 10px; */
+}
+
+.menu-item {
+    width: 40px;
+    padding-top: 10px;
+}
+
+#slide-cont {
+    width: 100%;
+    height: 40px;
+    /* margin-bottom: 10px; */
 }
