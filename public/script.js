@@ -20,47 +20,18 @@ canvasJQ.on("mousedown", (e) => {
     });
     canvasJQ.on("mouseup", () => {
         canvasJQ.unbind("mousemove");
+
         // Obtaining image url:
         signature.val(canvas.toDataURL());
     });
 });
 
-// var openNav = document.getElementById("menu");
+///// Touchscreen signature to be improved! /////
 
-// var closeNav = document.getElementById("close");
+canvas.addEventListener("touchstart", onTouchStart, false);
 
-// var overlay = document.querySelector(".overlay");
+function onTouchStart(e) {
+    context.fillRect(0, 0, 300, 300);
 
-// var sideNav = document.querySelector(".navbar");
-
-// $(".menu").on("click", function () {
-//     $(".navbar").classList.add("on");
-// });
-
-// $(".close").on("click", function () {
-//     $(".navbar").classList.remove("on");
-// });
-
-// $(".navbar").on("click", function (e) {
-//     e.stopPropagation();
-// });
-
-// $(".menu").on("click", function () {
-//     $(".navbar").toggleClass("on");
-// });
-
-// (function () {
-//     var navBar = document.getElementById("side-nav");
-//     var openNav = document.getElementById("nav");
-//     var closeNav = document.getElementById("close-x");
-
-//     openNav.addEventListener("click", function () {
-//         navBar.classList.add("overlay");
-//         navBar.style.visibility = "visible";
-//     });
-
-//     closeNav.addEventListener("click", function () {
-//         navBar.classList.remove("overlay");
-//         navBar.style.visibility = "hidden";
-//     });
-// })();
+    signature.val(canvas.toDataURL());
+}
