@@ -32,5 +32,23 @@ canvasJQ.on("touchstart", onTouchStart, false);
 
 function onTouchStart(e) {
     context.fillRect(0, 0, 300, 300);
-    signature.val(canvas.toDataURL());
+
+    canvasJQ.on("touchmove", (e) => {
+        let x = e.clientX - canvasJQ.eq(0).offset().left;
+        let y = e.clientY - canvasJQ.eq(0).offset().top;
+        context.moveTo(x, y);
+        context.beginPath();
+        canvasJQ.on("touchemove", (e) => {
+            let x = e.clientX - canvasJQ.eq(0).offset().left;
+            let y = e.clientY - canvasJQ.eq(0).offset().top;
+            context.lineTo(x, y);
+            context.stroke();
+        });
+        canvasJQ.on("touchend", () => {
+            canvasJQ.unbind("touchmove");
+
+            // Obtaining image url:
+            signature.val(canvas.toDataURL());
+        });
+    });
 }

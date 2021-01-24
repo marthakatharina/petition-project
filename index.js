@@ -210,7 +210,8 @@ app.post("/petition", requireLoggedInUser, (req, res) => {
     } else {
         console.log("redirected");
         res.render("petition", {
-            errorMessage: "Something went wrong. Please try again!",
+            errorMessage:
+                "Touchscreen not supported. Please try again on your desktop!",
         });
     }
 });
