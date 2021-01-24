@@ -28,10 +28,9 @@ canvasJQ.on("mousedown", (e) => {
 
 ///// Touchscreen signature to be improved! /////
 
-canvas.addEventListener("touchstart", onTouchStart, false);
+canvasJQ.on("touchstart", onTouchStart, false);
 
 function onTouchStart(e) {
     context.fillRect(0, 0, 300, 300);
-
     signature.val(canvas.toDataURL());
 }
