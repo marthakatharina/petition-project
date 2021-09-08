@@ -187,6 +187,10 @@ main {
     transform: translateX(100%);
 }
 
+.off {
+    visibility: hidden;
+}
+
 #x {
     text-align: left;
     font-size: 30px;

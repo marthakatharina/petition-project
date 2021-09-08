@@ -1,15 +1,17 @@
-var menu = document.getElementById("menu");
+var menuOpen = document.getElementById("menu");
 var navBar = document.getElementsByClassName("side-nav")[0];
 var overlay = document.getElementsByClassName("overlay")[0];
-var x = document.getElementById("x");
+var xClose = document.getElementById("x");
 
-menu.addEventListener("click", function () {
+menuOpen.addEventListener("click", function () {
+    navBar.classList.remove("off");
     navBar.classList.toggle("side-nav-display");
     overlay.classList.toggle("on");
 });
 
-x.addEventListener("click", function () {
+xClose.addEventListener("click", function () {
     navBar.classList.toggle("side-nav-display");
+    navBar.classList.add("off");
     overlay.classList.toggle("on");
 });
 
